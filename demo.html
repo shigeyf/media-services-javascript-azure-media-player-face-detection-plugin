@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="Azure Media Analytics" />
+    <title>Face Detection on Azure Media Analytics</title>
+    
+    <link href="//amp.azure.net/libs/amp/1.8.1/skins/amp-default/azuremediaplayer.min.css" rel="stylesheet" type="text/css" />
+    <script src="//amp.azure.net/libs/amp/1.8.1/azuremediaplayer.min.js"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+    <!-- Raphael.js is required for amp face detection plugin -->
+    <script src="raphael.min.js"></script>
+    <link href="amp-facedetection.css" rel="stylesheet" type="text/css" />
+    <script src="amp-facedetection.js"></script>
+
+    <script src="samples.js"></script>
+
+</head>
+<body>
+    <div id="container">
+        <h1>Face Detection/Emotion Detection Demo</h1>
+        
+        <h3>Quick Info</h3>
+        <div>
+            Extract face bounding boxes and emotions from video content.  Use face events to find humans in long content, or use the emotion events for sentiment analysis.<br/>
+            Output file is a descriptive JSON file that shows where and when faces are detected, and optionally their emotion.<br />
+            The demo highlights the face detected with a color based on their emotion.<br />
+        </div>
+        <h3>Legend</h3>
+        <div>
+            <span style="color:rgb(169,169,169)">neutral</span>,
+            <span style="color:rgb(0,255,0)">happiness</span>,
+            <span style="color:rgb(255,130,25)">surprise</span>,
+            <span style="color:rgb(0,180,255)">sadness</span>,
+            <span style="color:rgb(255,0,0)">anger</span>,
+            <span style="color:rgb(204,204,0)">disgust</span>,
+            <span style="color:rgb(0,0,0)">fear</span>,
+            <span style="color:rgb(150,0,150)">contempt</span>
+        </div>
+        
+        <div class="row">
+
+            <div id="description" style="padding-top:0em">
+                <div id="videoplayer">
+                    <video id="azuremediaplayer" class="azuremediaplayer amp-default-skin amp-big-play-centered" tabindex="0" width="100%" height="500" crossorigin="anonymous"></video>
+                </div>
+                <br />
+                <div class="row">
+                    <div>Samples:</div>
+                    <div id="samplesdropdown">
+                        <select class="form-control" id="selectSource" style="width: 100%">
+                            <option value="" disabled selected format="auto" src="none" facejson="none">
+                                Select a sample
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <button id="update-config" type="button">Update Player</button>
+                <br />
+
+                <script>
+                    var myPlayer = null;
+                    // default config
+                    var config = {
+                        src: "//amsdemo.streaming.mediaservices.windows.net/4e4ef6cc-e488-439a-90e9-9596e60e23fc/HoloLensDemo.ism/manifest",
+                        faceJson: "//amsdemo.streaming.mediaservices.windows.net/7985bf74-fd41-41d0-ab9a-ba4222166ed7/HoloLensDemo_annotations.json"
+                    };
+                    
+                    var initialize = function() {
+                        var myOptions = {
+                            autoplay: true,
+                            controls: true,
+                            poster: "",
+                            logo: { enabled: false },
+                            plugins: {
+                                fecedetection: {
+                                    faceJsonUrl: config.faceJson
+                                }
+                            }
+                        };
+                        myPlayer = amp("azuremediaplayer", myOptions, function () {});
+                        //myPlayer.fecedetection({ faceJsonUrl: config.faceJson }); // does not work well?
+                        myPlayer.setFaceJson(config.faceJson); // update face json
+                        myPlayer.src([{ src: config.src, type: "application/vnd.ms-sstr+xml" } ]);
+                    };
+                    
+                    var updateSampleList = function () {
+                        if (document.getElementById("selectSource")) {
+                            if (jsonSamplesList.length > 0) {
+                                for (var i = 0; i < jsonSamplesList.length; i++) {
+                                    $("#selectSource")
+                                        .append($("<option></option>")
+                                        .attr("src", jsonSamplesList[i].video)
+                                        .attr("facejson", jsonSamplesList[i].faceJson)
+                                        .text(jsonSamplesList[i].title));
+                                }
+                            } else {
+                                setTimeout(updateSampleList, 100);
+                            }
+                        }
+                    };
+                    var updateConfig = function () {
+                        if (!myPlayer.paused()) {
+                            myPlayer.pause();
+                        }
+                        initialize(); // reinitialize
+                    };
+                    
+                    // main routine
+                    initialize();
+                    if (document.getElementById("selectSource")) {
+                        updateSampleList();
+                        // Update Player is selected
+                        document.getElementById("update-config").onclick = function () {
+                            updateConfig();
+                        };                        
+                        //Updated source from the selectable samples
+                        $("#selectSource").change(function (e) {
+                            console.log("DEBUG: selected - " + $("#selectSource").val());
+                            for (var i = 0; i < jsonSamplesList.length; i++) {
+                                if (jsonSamplesList[i].title == $("#selectSource").val()) {
+                                    config.src = jsonSamplesList[i].video;
+                                    config.faceJson = jsonSamplesList[i].faceJson;
+                                    console.log("DEBUG: " + config.src);
+                                    console.log("DEBUG: " + config.faceJson);
+                                }
+                            }
+                        });
+                    }
+                    
+                </script>
+            </div>
+			
+        </div>
+		
+    </div>
+    
+    <br />
+    <div id="foot">&copy; 2017 Microsoft Corporation</div>
+
+</body>
+</html>
