@@ -41,7 +41,7 @@
             "fear": [0, 0, 0],
             "contempt": [150, 0, 150]
         };
-        var faceDefaultColor = faceColors.happiness;
+        var faceDefaultColor = faceColors.neutral;
         var displayUpdateInterval = 5; // 5ms
         
         if (!!options && !!options.faceJsonUrl) {
