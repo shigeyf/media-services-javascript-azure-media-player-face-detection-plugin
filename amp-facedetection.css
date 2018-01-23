@@ -16,18 +16,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-.azuremediaplayer > * {
-	z-index: 0;
-}
-
-.azuremediaplayer > svg {
-	z-index: 1;
-}
-
 .vjs-player svg {
 	z-index: 1;
-}
-
-.azuremediaplayer > .vjs-text-track-display ~ * {
-	z-index: 2;
+	display: block;
 }
